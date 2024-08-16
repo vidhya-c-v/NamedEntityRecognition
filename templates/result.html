@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa; /* Light gray background */
+        }
+        h2 {
+            color: #007bff; /* Blue heading color */
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            background-color: #fff; /* White background for table */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Soft box shadow */
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 12px;
+        }
+        th {
+            background-color: #f2f2f2; /* Light gray background for table header */
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff; /* Blue button background */
+            color: #fff; /* White button text */
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease; /* Smooth button hover effect */
+        }
+        a:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        p {
+            color: #888; /* Light gray text color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Prediction Results</h2>
+
+        {% if predictions %}
+            <!-- Table to display filtered predictions -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sentence</th>
+                        <th>Disease</th>
+                        <th>Affected Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in predictions %}
+                        <tr>
+                            <td>{{ prediction['Sentence'] }}</td>
+                            {% set disease_entity = None %}
+                            {% set affected_count = None %}
+                            {% for entity in prediction['Entities'] %}
+                                {% if entity[1] == 'DISEASE' %}
+                                    {% set disease_entity = entity[0] %}
+                                {% elif entity[1] == 'CARDINAL' %}
+                                    {% if ('cases' in entity[0]|lower or 
+                                          'affected' in entity[0]|lower) and 
+                                          (affected_count is none) %}
+                                        {% set affected_count = entity[0] %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <td>{{ disease_entity }}</td>
+                            <td>{{ affected_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Link to navigate to extracted entities page -->
+            <a href="/extracted_entities?predictions={{ predictions }}" class="btn btn-primary">View Final Result</a>
+        {% else %}
+            <p>No predictions available.</p>
+        {% endif %}
+
+        <br>
+        <a href="/" class="btn btn-secondary">Back to Home</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Extracted Entities</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            margin-right: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        a:hover {
+            background-color: #0056b3;
+        }
+        p {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>RESULT</h2>
+
+        {% if predictions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>NO. OF CASES</th>
+                        <th>DISEASE</th>
+                        <th>LOCATION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in predictions %}
+                        <tr>
+                            <td>
+                                {% for entity in prediction['Entities'] %}
+                                    {% if entity[1] == 'B-CARDINAL' or entity[1] == 'I-CARDINAL' %}
+                                        {{ entity[0] }}<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for entity in prediction['Entities'] %}
+                                    {% if entity[1] == 'B-DISEASE' or entity[1] == 'I-DISEASE' %}
+                                        {{ entity[0] }}<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for entity in prediction['Entities'] %}
+                                    {% if entity[1] == 'B-GPE' or entity[1] == 'I-GPE' %}
+                                        {{ entity[0] }}<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="#" onclick="exportTableToCSV('extracted_entities.csv')">Save as CSV</a>
+            <button onclick="printTable()">Print</button>
+        {% else %}
+            <p>No extracted entities available.</p>
+        {% endif %}
+
+        <a href="/">Back to Home</a>
+    </div>
+
+    <script>
+        function exportTableToCSV(filename) {
+            const rows = document.querySelectorAll('table tr');
+            let csvContent = '';
+
+            // Add table headings to CSV content
+            const headings = Array.from(document.querySelectorAll('table th')).map(th => th.textContent.trim());
+            csvContent += headings.join(',') + '\n';
+
+            // Add table data rows to CSV content
+            rows.forEach((row) => {
+                const rowData = [];
+                row.querySelectorAll('td').forEach((cell) => {
+                    rowData.push(`"${cell.textContent.trim()}"`);
+                });
+                csvContent += rowData.join(',') + '\n';
+            });
+
+            // Create and trigger download of CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function printTable() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
